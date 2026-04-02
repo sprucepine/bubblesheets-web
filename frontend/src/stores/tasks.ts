@@ -1,17 +1,18 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import { SaveState, type TaskItem } from '@/types/tasks'
+import { AnswerChoice, SaveState, type TaskItem } from '@/types/tasks'
 
 const DEFAULT_TASKS: TaskItem[] = [
-  { id: 1, label: 'Review source data' },
-  { id: 2, label: 'Clean malformed rows' },
-  { id: 3, label: 'Run transformation' },
-  { id: 4, label: 'Publish report' },
+  { id: 1, label: 'Review source data' , answer: AnswerChoice.D, notes: '' },
+  { id: 2, label: 'Clean malformed rows', answer: AnswerChoice.C, notes: '' },
+  { id: 3, label: 'Run transformation', answer: AnswerChoice.B, notes: '' },
+  { id: 4, label: 'Publish report' , answer: AnswerChoice.A, notes: '' },
 ]
 
 export const useTaskStore = defineStore(
   'tasks',
   () => {
+    const projectName = ref('Project Name')
     const tasks = ref<TaskItem[]>([...DEFAULT_TASKS])
     const saveState = ref<SaveState>(SaveState.Idle)
 
@@ -56,6 +57,7 @@ export const useTaskStore = defineStore(
 
     return {
       tasks,
+      projectName,
       saveState,
       saveStatusText,
       setTasks,
@@ -68,7 +70,7 @@ export const useTaskStore = defineStore(
     persist: {
       key: 'honors.tasks',
       storage: localStorage,
-      pick: ['tasks'],
+      pick: ['tasks', 'projectName'],
     },
   },
 )

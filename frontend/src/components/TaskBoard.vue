@@ -3,11 +3,12 @@ import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import draggable from 'vuedraggable'
 import { useTaskStore } from '@/stores/tasks'
-import { SaveState } from '@/types/tasks'
+import { AnswerChoice, SaveState } from '@/types/tasks'
 
 const taskStore = useTaskStore()
 const { tasks, saveStatusText } = storeToRefs(taskStore)
 const statusTimer = ref<number | null>(null)
+const answerChoices = Object.values(AnswerChoice)
 
 async function persistOrder() {
   taskStore.setSaveState(SaveState.Saving)
@@ -38,6 +39,14 @@ function moveTaskDown(index: number) {
   if (moved) {
     persistOrder()
   }
+}
+
+function setTaskAnswer(index: number, choice: AnswerChoice) {
+  const task = tasks.value[index]
+  if (!task || task.answer === choice) return
+
+  task.answer = choice
+  persistOrder()
 }
 </script>
 
@@ -79,7 +88,34 @@ function moveTaskDown(index: number) {
           >
             <iconify-icon icon="lucide:grip-vertical" width="16" height="16" aria-hidden="true"></iconify-icon>
           </button>
-          <span class="task-label">{{ element.label }}</span>
+          <div class="task-content">
+            <span class="badge badge-soft">Question {{ index + 1 }}</span>
+            <span class="task-label">{{ element.label }}</span>
+            <div class="join" role="group" :aria-label="`Answer choices for ${element.label}`">
+              <button
+                v-for="choice in answerChoices"
+                :key="choice"
+                class="join-item btn btn-outline btn-info"
+                :class="element.answer === choice ? 'btn-primary' : 'btn-outline'"
+                type="button"
+                :aria-pressed="element.answer === choice"
+                :aria-label="`Set ${element.label} answer to ${choice}`"
+                @click="setTaskAnswer(index, choice)"
+              >
+                {{ choice }}
+              </button>
+            </div>
+            <label class="sr-only" :for="`task-${element.id}-notes`">Notes for {{ element.label }}</label>
+            <input
+              :id="`task-${element.id}-notes`"
+              v-model="element.notes"
+              class="input input-bordered input-sm task-notes"
+              type="text"
+              placeholder="Add note"
+              :aria-label="`Notes for ${element.label}`"
+              @change="persistOrder"
+            />
+          </div>
           <div :id="`task-${element.id}-actions`" class="task-actions">
             <button
               class="btn btn-ghost btn-xs"
@@ -154,8 +190,19 @@ function moveTaskDown(index: number) {
 }
 
 .task-label {
-  flex: 1;
+  font-weight: 600;
   word-break: break-word;
+}
+
+.task-content {
+  flex: 1;
+  display: grid;
+  gap: 0.35rem;
+  min-width: 12rem;
+}
+
+.task-notes {
+  width: 100%;
 }
 
 .task-actions {

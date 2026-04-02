@@ -6,8 +6,8 @@ import Welcome from './Welcome.vue';
 
 <template>
 	<main class="page">
-		<Welcome />
-		<PythonLogicPanel />
+		<!-- <Welcome /> -->
+		<!-- <PythonLogicPanel /> -->
 		<TaskBoard />
 	</main>
 </template>

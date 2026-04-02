@@ -1,8 +1,23 @@
-<script setup>
-const logo = '/logo.svg';
+<script setup lang="ts">
+import { computed } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useTaskStore } from '@/stores/tasks'
+import { SaveState } from '@/types/tasks'
+
+const logo = '/logo.svg'
+const taskStore = useTaskStore()
+const { saveState, saveStatusText } = storeToRefs(taskStore)
+
+const statusLabel = computed(() => saveStatusText.value)
+const statusIcon = computed(() => {
+  if (saveState.value === SaveState.Saved) return 'lucide:cloud-check'
+  if (saveState.value === SaveState.Saving) return 'lucide:loader-circle'
+  if (saveState.value === SaveState.Error) return 'lucide:cloud-off'
+  return 'lucide:cloud'
+})
 </script>
 <template>
-  <div class="navbar bg-base-100 nav-wrap">
+  <div class="navbar bg-base-100 nav-wrap sticky top-0 z-30">
     <div class="navbar-start">
     <a class="btn btn-ghost normal-case nav-brand gap-2" href="#" aria-label="Bubblesheets on the Web home">
       <img :src="logo" aria-hidden="true" class="logo" />
@@ -25,6 +40,18 @@ const logo = '/logo.svg';
           </details>
         </li>
       </ul>
+      <div class="tooltip tooltip-bottom" :data-tip="statusLabel">
+        <button class="btn btn-ghost normal-case gap-2" >
+          <iconify-icon
+            :icon="statusIcon"
+            width="14"
+            height="14"
+            :class="{ 'animate-spin': saveState === SaveState.Saving }"
+            aria-hidden="true"
+          ></iconify-icon>
+          {{ statusLabel }}
+        </button>
+      </div>
   </div>
     <div class="navbar-end">
       <ul class="menu menu-horizontal px-1">
@@ -58,9 +85,13 @@ const logo = '/logo.svg';
 
 <style scoped>
 .nav-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   display: flex;
   align-items: center;
   padding: 0.55rem 1rem;
+  background: var(--color-base-100);
   border-bottom: 1px solid color-mix(in oklab, var(--color-base-content) 10%, transparent);
 }
 
