@@ -18,5 +18,6 @@ export enum SaveState {
   Idle = 'idle',
   Saving = 'saving',
   Saved = 'saved',
+  OldSaved = 'oldSaved',
   Error = 'error',
 }
