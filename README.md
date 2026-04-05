@@ -1,5 +1,9 @@
 # bubblesheets-web
 
+## About
+
+This is a web verison of the Bubblesheets editor from the Bubblesheets app. https://github.com/sprucepine/bubblesheets 
+
 ## GitHub Pages
 
 The frontend is deployed with GitHub Actions from the `main` branch.
