@@ -221,7 +221,7 @@
               </li>
               <li>
                 <a
-                  href="https://github.com"
+                  href="https://github.com/sprucepine/bubblesheets-web"
                   target="_blank"
                   rel="noopener noreferrer"
                   class="flex items-center justify-between gap-2"
