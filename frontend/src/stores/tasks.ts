@@ -63,6 +63,21 @@ export const useTaskStore = defineStore(
       tasks.value[index + 1] = current;
       return true;
     }
+    
+    function addTask() {
+      const newId = tasks.value.length > 0 ? Math.max(...tasks.value.map(t => t.id)) + 1 : 1;
+      tasks.value.push({
+        id: newId,
+        label: 'New Task',
+        answer: AnswerChoice.A,
+        notes: '',
+      });
+    }
+    function deleteTask(index: number) {
+      if (index < 0 || index >= tasks.value.length) return false;
+      tasks.value.splice(index, 1);
+      return true;
+    }
 
     return {
       tasks,
@@ -75,6 +90,8 @@ export const useTaskStore = defineStore(
       setSaveState,
       moveTaskUp,
       moveTaskDown,
+      addTask,
+      deleteTask,
     };
   },
   {

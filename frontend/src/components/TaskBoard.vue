@@ -47,6 +47,13 @@
     task.answer = choice;
     saveTasks();
   }
+
+  function deleteTask(index: number) {
+    const deleted = taskStore.deleteTask(index);
+    if (deleted) {
+      saveTasks();
+    }
+  }
 </script>
 
 <template>
@@ -159,6 +166,20 @@
             >
               <iconify-icon
                 icon="lucide:arrow-down"
+                width="14"
+                height="14"
+                aria-hidden="true"
+              ></iconify-icon>
+            </button>
+            <button
+              class="btn btn-ghost btn-xs"
+              type="button"
+              @click="deleteTask(index)"
+              :aria-label="`Delete ${element.label}`"
+              title="Delete task"
+            >
+              <iconify-icon
+                icon="lucide:x"
                 width="14"
                 height="14"
                 aria-hidden="true"

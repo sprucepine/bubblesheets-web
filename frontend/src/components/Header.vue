@@ -5,6 +5,7 @@
   import { SaveState } from '@/types/tasks';
   import ChangeTestName from '@/components/ChangeTestName.vue';
   import {
+    // bubblesheet file extension
     makeBubblesheetFilename,
     parseBubblesheetFile,
     serializeProjectToBubblesheet,
@@ -14,9 +15,32 @@
   const taskStore = useTaskStore();
   const { projectName, tasks, saveState, saveStatusText } = storeToRefs(taskStore);
 
+  const statusTimer = ref<number | null>(null); // timer for how the save status text should persist before fading out
+
   type ChangeNameModalExposed = {
     open: () => void;
   };
+
+  async function saveTasks() {
+    taskStore.setSaveState(SaveState.Saving);
+
+    // Persisted Pinia state writes to localStorage automatically.
+    await Promise.resolve();
+    taskStore.setSaveState(SaveState.Saved);
+
+    if (statusTimer.value !== null) {
+      window.clearTimeout(statusTimer.value);
+    }
+    statusTimer.value = window.setTimeout(() => {
+      taskStore.setSaveState(SaveState.OldSaved);
+      statusTimer.value = null;
+    }, 5000);
+  }
+
+  function addTask() {
+    taskStore.addTask();
+    saveTasks();
+  }
 
   const changeNameModalRef = ref<ChangeNameModalExposed | null>(null);
   const importInputRef = ref<HTMLInputElement | null>(null);
@@ -140,6 +164,10 @@
           aria-hidden="true"
         ></iconify-icon>
         {{ statusLabel }}
+      </button>
+      <button type="button" class="btn" @click="addTask">
+        <iconify-icon icon="lucide:plus" width="18" height="18"></iconify-icon>
+        Add Task
       </button>
     </div>
     <div class="navbar-end">
