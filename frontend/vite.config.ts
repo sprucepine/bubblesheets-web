@@ -7,19 +7,11 @@ import vueDevTools from 'vite-plugin-vue-devtools';
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/python-honors-project/',
+  base: './',
   plugins: [tailwindcss(), vue(), vueDevTools()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
-    },
-  },
-  server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-      },
     },
   },
 });
