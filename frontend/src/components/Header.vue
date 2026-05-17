@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed, ref } from 'vue';
+  import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
   import { storeToRefs } from 'pinia';
   import { useTaskStore } from '@/stores/tasks';
   import { SaveState } from '@/types/tasks';
@@ -44,6 +44,8 @@
 
   const changeNameModalRef = ref<ChangeNameModalExposed | null>(null);
   const importInputRef = ref<HTMLInputElement | null>(null);
+  const projectMenuRef = ref<HTMLDetailsElement | null>(null);
+  const linksMenuRef = ref<HTMLDetailsElement | null>(null);
 
   function openChangeNameModal() {
     changeNameModalRef.value?.open();
@@ -51,6 +53,30 @@
 
   function openImportPicker() {
     importInputRef.value?.click();
+  }
+
+  function closeMenus() {
+    if (projectMenuRef.value) {
+      projectMenuRef.value.open = false;
+    }
+
+    if (linksMenuRef.value) {
+      linksMenuRef.value.open = false;
+    }
+  }
+
+  function onDocumentPointerDown(event: PointerEvent) {
+    const target = event.target;
+
+    if (!(target instanceof Node)) {
+      return;
+    }
+
+    if (projectMenuRef.value?.contains(target) || linksMenuRef.value?.contains(target)) {
+      return;
+    }
+
+    closeMenus();
   }
 
   async function onImportSelected(event: Event) {
@@ -113,10 +139,18 @@
     if (saveState.value === SaveState.OldSaved) return 'All changes saved';
     return 'No changes yet';
   });
+
+  onMounted(() => {
+    document.addEventListener('pointerdown', onDocumentPointerDown);
+  });
+
+  onBeforeUnmount(() => {
+    document.removeEventListener('pointerdown', onDocumentPointerDown);
+  });
 </script>
 <template>
-  <div class="navbar bg-base-100 nav-wrap sticky top-0 z-30">
-    <div class="navbar-start">
+  <div class="navbar bg-base-100 nav-wrap sticky top-0 z-30 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+    <div class="navbar-start w-full sm:w-auto flex items-center gap-2 justify-start">
       <a
         class="btn btn-ghost normal-case nav-brand gap-2"
         href="#"
@@ -127,16 +161,16 @@
       </a>
       <ul class="menu menu-horizontal px-1">
         <li>
-          <details>
-            <summary>
+          <details ref="projectMenuRef">
+            <summary class="flex items-center gap-1" aria-haspopup="true">
               {{ projectName }}
             </summary>
             <ul class="bg-base-100 rounded-box right-0 w-56 p-2 shadow">
               <li>
                 <button
                   type="button"
-                  class="flex w-full items-center justify-between gap-2"
-                  @click="openChangeNameModal"
+                  class="flex w-full items-center justify-between gap-2 px-3 py-2"
+                  @click="openChangeNameModal(); closeMenus()"
                 >
                   <span>Change Project Name</span>
                   <iconify-icon
@@ -151,10 +185,15 @@
           </details>
         </li>
       </ul>
+      <button type="button" class="btn gap-2 h-10 px-3" @click="addTask">
+        <iconify-icon icon="lucide:plus" width="18" height="18"></iconify-icon>
+        Add Task
+      </button>
       <button
         type="button"
-        class="tooltip tooltip-bottom btn btn-ghost normal-case gap-2"
+        class="tooltip tooltip-bottom btn btn-ghost normal-case gap-2 h-10 px-3"
         :data-tip="statusTooltip"
+        :aria-label="statusTooltip"
       >
         <iconify-icon
           :icon="statusIcon"
@@ -165,13 +204,9 @@
         ></iconify-icon>
         {{ statusLabel }}
       </button>
-      <button type="button" class="btn" @click="addTask">
-        <iconify-icon icon="lucide:plus" width="18" height="18"></iconify-icon>
-        Add Task
-      </button>
     </div>
-    <div class="navbar-end">
-      <button type="button" class="btn" @click="openImportPicker">
+    <div class="navbar-end w-full sm:w-auto flex items-center gap-2 justify-end mt-2 sm:mt-0">
+      <button type="button" class="btn h-10 px-3" @click="openImportPicker" aria-label="Import project">
         <iconify-icon
           icon="lucide:arrow-up-from-line"
           width="18"
@@ -186,7 +221,7 @@
         accept=".bubblesheet,application/json"
         @change="onImportSelected"
       />
-      <button type="button" class="btn" @click="exportBubblesheet">
+      <button type="button" class="btn gap-2 h-10 px-3" @click="exportBubblesheet" aria-label="Export project">
         <iconify-icon
           icon="lucide:arrow-down-from-line"
           width="18"
@@ -196,18 +231,20 @@
       </button>
       <ul class="menu menu-horizontal px-1">
         <li>
-          <details>
-            <summary>
-              <iconify-icon icon="lucide:github" width="18" height="18"></iconify-icon>
+          <details ref="linksMenuRef">
+            <summary class="flex items-center" aria-haspopup="true" aria-label="Open external links menu">
+              <iconify-icon icon="lucide:github" width="18" height="18" aria-hidden="true"></iconify-icon>
+              <span class="sr-only">Open external links menu</span>
             </summary>
-            <ul class="bg-base-100 rounded-box right-0 w-56 p-2 shadow">
+            <ul class="bg-base-100 rounded-box right-0 w-full sm:w-56 p-2 shadow">
               <li>
                 <a
                   href="https://github.com/sprucepine/bubblesheets"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="flex items-center justify-between gap-2"
+                  class="flex items-center justify-between gap-2 px-3 py-2"
                   aria-label="Swift app repository (opens in new tab)"
+                  @click="closeMenus()"
                 >
                   <span>Swift App Repository</span>
                   <iconify-icon
@@ -224,8 +261,9 @@
                   href="https://github.com/sprucepine/bubblesheets-web"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="flex items-center justify-between gap-2"
+                  class="flex items-center justify-between gap-2 px-3 py-2"
                   aria-label="Web app repository (opens in new tab)"
+                  @click="closeMenus()"
                 >
                   <span>Web App Repository</span>
                   <iconify-icon
